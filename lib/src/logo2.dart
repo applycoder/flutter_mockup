@@ -23,6 +23,8 @@ class _Logo2State extends State<Logo2> {
   final ValueNotifier<Offset> transformOffset = ValueNotifier(Offset.zero);
   final ValueNotifier<double> transformScale = ValueNotifier(1.0);
   final GlobalKey tshirtKey = GlobalKey();
+  Offset dragdifference = Offset.zero;
+  double previousScale = 1;
   bool dragStarted = false;
   double cornersSize = 10;
   RenderBox? tshirtRenderBox;
@@ -124,24 +126,7 @@ class _Logo2State extends State<Logo2> {
                                     controllerValue.tshirtGlobalPosition.dx,
                                 top: controllerValue.logoPositionOffset.dy +
                                     controllerValue.tshirtGlobalPosition.dy,
-                                child: Draggable(
-                                  onDragStarted: () {
-                                    setState(() {
-                                      dragStarted = true;
-                                    });
-                                  },
-                                  onDragEnd: (details) {
-                                    widget._controller.value = controllerValue.copyWith(
-                                        logoPositionOffset:
-                                            details.offset - controllerValue.tshirtGlobalPosition);
-                                    setState(() {
-                                      dragStarted = false;
-                                    });
-                                  },
-                                  childWhenDragging: Container(),
-                                  feedback: _buildLogo(controllerValue),
-                                  child: _buildLogo(controllerValue),
-                                ),
+                                child: _buildLogo(controllerValue),
                               ),
                             ],
                           );
@@ -165,19 +150,53 @@ class _Logo2State extends State<Logo2> {
             child: Listener(
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
+                  final previousImageSize = Offset(
+                      value.logoImageSize.width * value.tshirtScale * value.logoScale,
+                      value.logoImageSize.height * value.tshirtScale * value.logoScale);
+                  final newScale = (value.logoScale - event.scrollDelta.dy / 100).clamp(0.1, 10.0);
+                  final imageSize = Offset(value.logoImageSize.width * value.tshirtScale * newScale,
+                      value.logoImageSize.height * value.tshirtScale * newScale);
+                  final additionOffset = (previousImageSize - imageSize) / 2;
+                  final newOffset = value.logoPositionOffset + additionOffset;
                   widget._controller.value = widget._controller.value.copyWith(
-                    logoScale: (widget._controller.value.logoScale - event.scrollDelta.dy / 100)
-                        .clamp(0.1, 10.0),
+                    logoScale: newScale,
+                    logoPositionOffset: newOffset,
                   );
+                  if (event is PointerPanZoomStartEvent) {
+                    print('PointerPanZoomStartEvent');
+                  }
                 }
               },
-              onPointerPanZoomUpdate: (event) {
-                widget._controller.value = widget._controller.value.copyWith(
-                  logoScale: (widget._controller.value.logoScale - event.scale).clamp(0.1, 10.0),
-                );
-              },
               child: GestureDetector(
-                onPanUpdate: (details) => transformOffset.value += details.delta,
+                onScaleStart: (details) {
+                  dragdifference = details.focalPoint - value.logoPositionOffset;
+                  dragStarted = true;
+                  previousScale = value.logoScale;
+                },
+                onScaleUpdate: (details) {
+                  final previousImageSize = Offset(
+                      value.logoImageSize.width * value.tshirtScale * value.logoScale,
+                      value.logoImageSize.height * value.tshirtScale * value.logoScale);
+                  final newScale = previousScale * (details.scale);
+                  final newImageSize = Offset(
+                      value.logoImageSize.width * value.tshirtScale * newScale,
+                      value.logoImageSize.height * value.tshirtScale * newScale);
+                  final additionOffset = (previousImageSize - newImageSize) / 2;
+                  Offset newOffset = Offset.zero;
+                  if (newScale == value.logoScale) {
+                    newOffset = details.focalPoint - dragdifference + additionOffset;
+                  } else {
+                    newOffset = value.logoPositionOffset + additionOffset;
+                  }
+                  widget._controller.value = widget._controller.value.copyWith(
+                    logoScale: newScale,
+                    logoPositionOffset: newOffset,
+                  );
+                },
+                onScaleEnd: (details) {
+                  dragStarted = false;
+                  print('ScaleEnd');
+                },
                 child: Image.asset(
                   value.logoImage,
                   fit: BoxFit.contain,
