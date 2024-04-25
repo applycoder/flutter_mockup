@@ -5,23 +5,26 @@ class MockupController extends ValueNotifier<MockupData> {
 }
 
 class MockupData {
-  String tshirtImage;
-  String logoImage;
-  Offset logoPositionOffset = Offset.zero;
-  Offset logoTopLeftCornerOffset = Offset.zero;
-  Offset logoTopRightCornerOffset = Offset.zero;
-  Offset logoBottomLeftCornerOffset = Offset.zero;
-  Offset logoBottomRightCornerOffset = Offset.zero;
-  double logoScale = 1.0;
-  double logoRotation = 0.0;
-  double logoOpacity = 1.0;
-  double logoShadow = 0.0;
-  Color logoBorderColor = Colors.transparent;
-  double logoBorderWidth = 0.0;
-  double logoBorderRadius = 0.0;
-  double tshirtScale = 1.0;
+  final String tshirtImage;
+  final String logoImage;
+  final Offset logoPositionOffset;
+  final Offset logoTopLeftCornerOffset;
+  final Offset logoTopRightCornerOffset;
+  final Offset logoBottomLeftCornerOffset;
+  final Offset logoBottomRightCornerOffset;
+  final double logoScale;
+  final double logoRotation;
+  final double logoOpacity;
+  final double logoShadow;
+  final Color logoBorderColor;
+  final double logoBorderWidth;
+  final double logoBorderRadius;
+  final double tshirtScale;
+  final Size tshirtImageSize;
+  final Size logoImageSize;
+  final Offset tshirtGlobalPosition;
 
-  MockupData({
+  const MockupData({
     required this.tshirtImage,
     required this.logoImage,
     Offset? logoPositionOffset,
@@ -37,22 +40,25 @@ class MockupData {
     double? logoBorderWidth,
     double? logoBorderRadius,
     double? tshirtScale,
-  }) {
-    this.logoPositionOffset = logoPositionOffset ?? this.logoPositionOffset;
-    this.logoTopLeftCornerOffset = logoTopLeftCornerOffset ?? this.logoTopLeftCornerOffset;
-    this.logoTopRightCornerOffset = logoTopRightCornerOffset ?? this.logoTopRightCornerOffset;
-    this.logoBottomLeftCornerOffset = logoBottomLeftCornerOffset ?? this.logoBottomLeftCornerOffset;
-    this.logoBottomRightCornerOffset =
-        logoBottomRightCornerOffset ?? this.logoBottomRightCornerOffset;
-    this.logoScale = logoScale ?? this.logoScale;
-    this.logoRotation = logoRotation ?? this.logoRotation;
-    this.logoOpacity = logoOpacity ?? this.logoOpacity;
-    this.logoShadow = logoShadow ?? this.logoShadow;
-    this.logoBorderColor = logoBorderColor ?? this.logoBorderColor;
-    this.logoBorderWidth = logoBorderWidth ?? this.logoBorderWidth;
-    this.logoBorderRadius = logoBorderRadius ?? this.logoBorderRadius;
-    this.tshirtScale = tshirtScale ?? this.tshirtScale;
-  }
+    Size? tshirtImageSize,
+    Size? logoImageSize,
+    Offset? tshirtGlobalPosition,
+  })  : logoPositionOffset = logoPositionOffset ?? Offset.zero,
+        logoTopLeftCornerOffset = logoTopLeftCornerOffset ?? Offset.zero,
+        logoTopRightCornerOffset = logoTopRightCornerOffset ?? Offset.zero,
+        logoBottomLeftCornerOffset = logoBottomLeftCornerOffset ?? Offset.zero,
+        logoBottomRightCornerOffset = logoBottomRightCornerOffset ?? Offset.zero,
+        logoScale = logoScale ?? 1.0,
+        logoRotation = logoRotation ?? 0.0,
+        logoOpacity = logoOpacity ?? 1.0,
+        logoShadow = logoShadow ?? 0.0,
+        logoBorderColor = logoBorderColor ?? Colors.transparent,
+        logoBorderWidth = logoBorderWidth ?? 0.0,
+        logoBorderRadius = logoBorderRadius ?? 0.0,
+        tshirtScale = tshirtScale ?? 1.0,
+        tshirtImageSize = tshirtImageSize ?? Size.zero,
+        logoImageSize = logoImageSize ?? Size.zero,
+        tshirtGlobalPosition = tshirtGlobalPosition ?? Offset.zero;
 
   MockupData copyWith({
     String? tshirtImage,
@@ -70,6 +76,9 @@ class MockupData {
     double? logoBorderWidth,
     double? logoBorderRadius,
     double? tshirtScale,
+    Size? tshirtImageSize,
+    Size? logoImageSize,
+    Offset? tshirtGlobalPosition,
   }) {
     return MockupData(
       tshirtImage: tshirtImage ?? this.tshirtImage,
@@ -87,6 +96,9 @@ class MockupData {
       logoBorderWidth: logoBorderWidth ?? this.logoBorderWidth,
       logoBorderRadius: logoBorderRadius ?? this.logoBorderRadius,
       tshirtScale: tshirtScale ?? this.tshirtScale,
+      tshirtImageSize: tshirtImageSize ?? this.tshirtImageSize,
+      logoImageSize: logoImageSize ?? this.logoImageSize,
+      tshirtGlobalPosition: tshirtGlobalPosition ?? this.tshirtGlobalPosition,
     );
   }
 }

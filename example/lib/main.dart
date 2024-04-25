@@ -14,14 +14,15 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   final MockupController _controller = MockupController(
-    MockupData(
+    const MockupData(
       tshirtImage: 'assets/tshirt.png',
-      logoImage: 'assets/design.png',
+      logoImage: 'assets/design2.png',
     ),
   );
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
           child: MockupWidget(
