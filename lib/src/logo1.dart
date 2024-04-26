@@ -92,11 +92,11 @@ class _Logo1State extends State<Logo1> {
                                 tshirtScale: tshirtCurrentScale,
                                 tshirtImageSize: tshirtImageSize,
                                 logoImageSize: logoImageSize,
-                                logoPositionOffset: Offset(
-                                  controllerValue.logoPositionOffset.dx *
+                                logoPosition: Offset(
+                                  controllerValue.logoPosition.dx *
                                       tshirtCurrentScale /
                                       tshirtPreviousScale,
-                                  controllerValue.logoPositionOffset.dy *
+                                  controllerValue.logoPosition.dy *
                                       tshirtCurrentScale /
                                       tshirtPreviousScale,
                                 ),
@@ -114,8 +114,8 @@ class _Logo1State extends State<Logo1> {
                                 ),
                               ),
                               Positioned(
-                                left: controllerValue.logoPositionOffset.dx,
-                                top: controllerValue.logoPositionOffset.dy,
+                                left: controllerValue.logoPosition.dx,
+                                top: controllerValue.logoPosition.dy,
                                 child: Transform.rotate(
                                   angle: controllerValue.logoRotation,
                                   child: Stack(
@@ -129,12 +129,12 @@ class _Logo1State extends State<Logo1> {
                                         onPanUpdate: (details) {
                                           final cursorOffset = details.globalPosition;
                                           final imageCenterOffset = Offset(
-                                            controllerValue.logoPositionOffset.dx +
+                                            controllerValue.logoPosition.dx +
                                                 controllerValue.logoImageSize.width *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
                                                     2,
-                                            controllerValue.logoPositionOffset.dy +
+                                            controllerValue.logoPosition.dy +
                                                 controllerValue.logoImageSize.height *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
@@ -159,12 +159,12 @@ class _Logo1State extends State<Logo1> {
                                         onPanUpdate: (details) {
                                           final cursorOffset = details.globalPosition;
                                           final imageCenterOffset = Offset(
-                                            controllerValue.logoPositionOffset.dx +
+                                            controllerValue.logoPosition.dx +
                                                 controllerValue.logoImageSize.width *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
                                                     2,
-                                            controllerValue.logoPositionOffset.dy +
+                                            controllerValue.logoPosition.dy +
                                                 controllerValue.logoImageSize.height *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
@@ -189,12 +189,12 @@ class _Logo1State extends State<Logo1> {
                                         onPanUpdate: (details) {
                                           final cursorOffset = details.globalPosition;
                                           final imageCenterOffset = Offset(
-                                            controllerValue.logoPositionOffset.dx +
+                                            controllerValue.logoPosition.dx +
                                                 controllerValue.logoImageSize.width *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
                                                     2,
-                                            controllerValue.logoPositionOffset.dy +
+                                            controllerValue.logoPosition.dy +
                                                 controllerValue.logoImageSize.height *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
@@ -219,12 +219,12 @@ class _Logo1State extends State<Logo1> {
                                         onPanUpdate: (details) {
                                           final cursorOffset = details.globalPosition;
                                           final imageCenterOffset = Offset(
-                                            controllerValue.logoPositionOffset.dx +
+                                            controllerValue.logoPosition.dx +
                                                 controllerValue.logoImageSize.width *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
                                                     2,
-                                            controllerValue.logoPositionOffset.dy +
+                                            controllerValue.logoPosition.dy +
                                                 controllerValue.logoImageSize.height *
                                                     controllerValue.tshirtScale *
                                                     controllerValue.logoScale /
@@ -248,7 +248,7 @@ class _Logo1State extends State<Logo1> {
                                         cornersSize: cornersSize,
                                         onPanUpdate: (details) {
                                           final imageOffsetMirrorCorner =
-                                              controllerValue.logoPositionOffset;
+                                              controllerValue.logoPosition;
                                           final pointerOffset = details.globalPosition;
                                           final newX =
                                               pointerOffset.dx - imageOffsetMirrorCorner.dx - 5;
@@ -275,7 +275,7 @@ class _Logo1State extends State<Logo1> {
                                         cornersSize: cornersSize,
                                         onPanUpdate: (details) {
                                           final imageOffsetMirrorCorner =
-                                              controllerValue.logoPositionOffset;
+                                              controllerValue.logoPosition;
                                           final pointerOffset = details.globalPosition;
                                           final newX =
                                               pointerOffset.dx - imageOffsetMirrorCorner.dx - 5;
@@ -302,7 +302,7 @@ class _Logo1State extends State<Logo1> {
                                         cornersSize: cornersSize,
                                         onPanUpdate: (details) {
                                           final imageOffsetMirrorCorner =
-                                              controllerValue.logoPositionOffset;
+                                              controllerValue.logoPosition;
                                           final pointerOffset = details.globalPosition;
                                           final newX =
                                               pointerOffset.dx - imageOffsetMirrorCorner.dx - 5;
@@ -329,7 +329,7 @@ class _Logo1State extends State<Logo1> {
                                         cornersSize: cornersSize,
                                         onPanUpdate: (details) {
                                           final imageOffsetMirrorCorner =
-                                              controllerValue.logoPositionOffset;
+                                              controllerValue.logoPosition;
                                           final pointerOffset = details.globalPosition;
                                           final newX =
                                               pointerOffset.dx - imageOffsetMirrorCorner.dx - 5;
@@ -357,7 +357,7 @@ class _Logo1State extends State<Logo1> {
                                           },
                                           onDragEnd: (details) {
                                             widget._controller.value = controllerValue.copyWith(
-                                                logoPositionOffset: details.offset);
+                                                logoPosition: details.offset);
                                             setState(() {
                                               dragStarted = false;
                                             });

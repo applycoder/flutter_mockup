@@ -23,8 +23,9 @@ class _Logo2State extends State<Logo2> {
   final ValueNotifier<Offset> transformOffset = ValueNotifier(Offset.zero);
   final ValueNotifier<double> transformScale = ValueNotifier(1.0);
   final GlobalKey tshirtKey = GlobalKey();
-  Offset dragdifference = Offset.zero;
+  Offset pointScale = Offset.zero;
   double previousScale = 1;
+  double previousLogoRotation = 0;
   bool dragStarted = false;
   double cornersSize = 10;
   RenderBox? tshirtRenderBox;
@@ -75,7 +76,7 @@ class _Logo2State extends State<Logo2> {
                         return LayoutBuilder(builder: (context, constraints) {
                           Future.delayed(Duration.zero, () {
                             // Get resolution of the tshirt image
-                            final tshirtImageSize = Size(tshirtImageValue.image.width.toDouble(),
+                            final tshirtImageSize = Offset(tshirtImageValue.image.width.toDouble(),
                                 tshirtImageValue.image.height.toDouble());
                             // Get the render box of the tshirt image
                             tshirtRenderBox =
@@ -86,33 +87,33 @@ class _Logo2State extends State<Logo2> {
                                 tshirtRenderBox!.localToGlobal(Offset.zero);
                             // Calculate the scale of the tshirt image
                             final tshirtCurrentScale = min(
-                                tshirtRenderSize.width / tshirtImageSize.width,
-                                tshirtRenderSize.height / tshirtImageSize.height);
+                                tshirtRenderSize.width / tshirtImageSize.dx,
+                                tshirtRenderSize.height / tshirtImageSize.dy);
                             // Get the previous scale of the tshirt image
                             final tshirtPreviousScale = controllerValue.tshirtScale;
                             // Get resolution of the logo image
-                            final logoImageSize = Size(logoImageValue.image.width.toDouble(),
+                            final logoImageSize = Offset(logoImageValue.image.width.toDouble(),
                                 logoImageValue.image.height.toDouble());
-                            final logoRenderSize = Size(logoImageSize.width * tshirtCurrentScale,
-                                logoImageSize.height * tshirtCurrentScale);
+                            final logoRenderSize = Offset(logoImageSize.dx * tshirtCurrentScale,
+                                logoImageSize.dy * tshirtCurrentScale);
 
                             // Update the controller value
                             if (tshirtPreviousScale != tshirtCurrentScale) {
-                              if (controllerValue.logoPositionOffset == Offset.zero) {
+                              if (controllerValue.logoPosition == Offset.zero) {
                                 widget._controller.value = controllerValue.copyWith(
                                   tshirtScale: tshirtCurrentScale,
                                   tshirtImageSize: tshirtImageSize,
                                   logoImageSize: logoImageSize,
                                   tshirtGlobalPosition: tshirtGlobalPosition,
-                                  logoPositionOffset: Offset(
-                                    (controllerValue.logoPositionOffset.dx *
+                                  logoPosition: Offset(
+                                    (controllerValue.logoPosition.dx *
                                             tshirtCurrentScale /
                                             tshirtPreviousScale) +
-                                        (tshirtRenderSize.width - logoRenderSize.width) / 2,
-                                    controllerValue.logoPositionOffset.dy *
+                                        (tshirtRenderSize.width - logoRenderSize.dx) / 2,
+                                    controllerValue.logoPosition.dy *
                                             tshirtCurrentScale /
                                             tshirtPreviousScale +
-                                        (tshirtRenderSize.height - logoRenderSize.height) / 2,
+                                        (tshirtRenderSize.height - logoRenderSize.dy) / 2,
                                   ),
                                 );
                               } else {
@@ -121,11 +122,11 @@ class _Logo2State extends State<Logo2> {
                                   tshirtImageSize: tshirtImageSize,
                                   logoImageSize: logoImageSize,
                                   tshirtGlobalPosition: tshirtGlobalPosition,
-                                  logoPositionOffset: Offset(
-                                    (controllerValue.logoPositionOffset.dx *
+                                  logoPosition: Offset(
+                                    (controllerValue.logoPosition.dx *
                                         tshirtCurrentScale /
                                         tshirtPreviousScale),
-                                    controllerValue.logoPositionOffset.dy *
+                                    controllerValue.logoPosition.dy *
                                         tshirtCurrentScale /
                                         tshirtPreviousScale,
                                   ),
@@ -144,10 +145,8 @@ class _Logo2State extends State<Logo2> {
                                 ),
                               ),
                               Positioned(
-                                left: controllerValue.logoPositionOffset.dx +
-                                    controllerValue.tshirtGlobalPosition.dx,
-                                top: controllerValue.logoPositionOffset.dy +
-                                    controllerValue.tshirtGlobalPosition.dy,
+                                left: controllerValue.logoGlobalPosition.dx,
+                                top: controllerValue.logoGlobalPosition.dy,
                                 child: _buildLogo(controllerValue),
                               ),
                               Align(
@@ -160,10 +159,8 @@ class _Logo2State extends State<Logo2> {
                                 ),
                               ),
                               Positioned(
-                                left: controllerValue.logoPositionOffset.dx +
-                                    controllerValue.tshirtGlobalPosition.dx,
-                                top: controllerValue.logoPositionOffset.dy +
-                                    controllerValue.tshirtGlobalPosition.dy,
+                                left: controllerValue.logoGlobalPosition.dx,
+                                top: controllerValue.logoGlobalPosition.dy,
                                 child: _buildLogo(controllerValue, showLogo: false),
                               ),
                             ],
@@ -182,62 +179,59 @@ class _Logo2State extends State<Logo2> {
           return Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
-              ..rotateX(transformOffsetValue.dy * pi / 180)
-              ..rotateZ(transformOffsetValue.dx * pi / 180),
+              ..rotateZ(value.logoRotation),
             alignment: Alignment.center,
             child: showLogo
                 ? Image.asset(
                     value.logoImage,
                     fit: BoxFit.contain,
-                    width: value.logoImageSize.width * value.tshirtScale * value.logoScale,
-                    height: value.logoImageSize.height * value.tshirtScale * value.logoScale,
+                    width: value.logoWidgetSize.dx,
+                    height: value.logoWidgetSize.dy,
                   )
                 : Listener(
                     onPointerSignal: (event) {
                       if (event is PointerScrollEvent) {
-                        final previousImageSize = Offset(
-                            value.logoImageSize.width * value.tshirtScale * value.logoScale,
-                            value.logoImageSize.height * value.tshirtScale * value.logoScale);
+                        final previousImageSize =
+                            Offset(value.logoWidgetSize.dx, value.logoWidgetSize.dy);
                         final newScale =
                             (value.logoScale - event.scrollDelta.dy / 100).clamp(0.1, 10.0);
                         final imageSize = Offset(
-                            value.logoImageSize.width * value.tshirtScale * newScale,
-                            value.logoImageSize.height * value.tshirtScale * newScale);
-                        final additionOffset = (previousImageSize - imageSize) / 2;
-                        final newOffset = value.logoPositionOffset + additionOffset;
+                            value.logoImageSize.dx * value.tshirtScale * newScale,
+                            value.logoImageSize.dy * value.tshirtScale * newScale);
+                        final sizeDifference = (previousImageSize - imageSize) / 2;
+                        final newOffset = value.logoPosition + sizeDifference;
+
                         widget._controller.value = widget._controller.value.copyWith(
                           logoScale: newScale,
-                          logoPositionOffset: newOffset,
+                          logoPosition: newOffset,
                         );
-                        if (event is PointerPanZoomStartEvent) {
-                          print('PointerPanZoomStartEvent');
-                        }
                       }
                     },
                     child: GestureDetector(
                       onScaleStart: (details) {
-                        dragdifference = details.focalPoint - value.logoPositionOffset;
+                        Offset pointOffset = details.focalPoint - value.logoGlobalPosition;
+                        pointScale = Offset(
+                          pointOffset.dx / value.logoWidgetSize.dx,
+                          pointOffset.dy / value.logoWidgetSize.dy,
+                        );
                         dragStarted = true;
                         previousScale = value.logoScale;
+                        previousLogoRotation = value.logoRotation;
                       },
                       onScaleUpdate: (details) {
-                        final previousImageSize = Offset(
-                            value.logoImageSize.width * value.tshirtScale * value.logoScale,
-                            value.logoImageSize.height * value.tshirtScale * value.logoScale);
                         final newScale = previousScale * (details.scale);
                         final newImageSize = Offset(
-                            value.logoImageSize.width * value.tshirtScale * newScale,
-                            value.logoImageSize.height * value.tshirtScale * newScale);
-                        final additionOffset = (previousImageSize - newImageSize) / 2;
-                        Offset newOffset = Offset.zero;
-                        if (newScale == value.logoScale) {
-                          newOffset = details.focalPoint - dragdifference + additionOffset;
-                        } else {
-                          newOffset = value.logoPositionOffset + additionOffset;
-                        }
+                            value.logoImageSize.dx * value.tshirtScale * newScale,
+                            value.logoImageSize.dy * value.tshirtScale * newScale);
+
+                        Offset newOffset = details.focalPoint -
+                            value.tshirtGlobalPosition +
+                            Offset(
+                                -newImageSize.dx * pointScale.dx, -newImageSize.dy * pointScale.dy);
                         widget._controller.value = widget._controller.value.copyWith(
                           logoScale: newScale,
-                          logoPositionOffset: newOffset,
+                          logoPosition: newOffset,
+                          logoRotation: details.rotation + previousLogoRotation,
                         );
                       },
                       onScaleEnd: (details) {
@@ -245,8 +239,8 @@ class _Logo2State extends State<Logo2> {
                         print('ScaleEnd');
                       },
                       child: Container(
-                        width: value.logoImageSize.width * value.tshirtScale * value.logoScale,
-                        height: value.logoImageSize.height * value.tshirtScale * value.logoScale,
+                        width: value.logoWidgetSize.dx,
+                        height: value.logoWidgetSize.dy,
                         color: Colors.transparent,
                       ),
                     ),
