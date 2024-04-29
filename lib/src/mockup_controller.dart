@@ -5,32 +5,20 @@ import 'package:flutter/material.dart';
 class MockupController with ChangeNotifier {
   String _tshirtImage;
   String _logoImage;
-  Offset _logoPosition;
-  double _logoScale;
-  double _logoRotation;
-  double _tshirtScale;
-  Offset _tshirtImageSize;
-  Offset _logoImageSize;
-  Offset _tshirtGlobalPosition;
+  Offset _logoPosition = Offset.zero;
+  double _logoScale = 1.0;
+  double _logoRotation = 0.0;
+  double _tshirtScale = 1.0;
+  Offset _tshirtImageSize = Offset.zero;
+  Offset _logoImageSize = Offset.zero;
+  Offset _tshirtGlobalPosition = Offset.zero;
+  int _mouseMode = 0;
+
   MockupController({
     required String tshirtImage,
     required String logoImage,
-    Offset? logoPosition,
-    double? logoScale,
-    double? logoRotation,
-    double? tshirtScale,
-    Offset? tshirtImageSize,
-    Offset? logoImageSize,
-    Offset? tshirtGlobalPosition,
   })  : _tshirtImage = tshirtImage,
-        _logoImage = logoImage,
-        _logoPosition = logoPosition ?? Offset.zero,
-        _logoScale = logoScale ?? 1.0,
-        _logoRotation = logoRotation ?? 0.0,
-        _tshirtScale = tshirtScale ?? 1.0,
-        _tshirtImageSize = tshirtImageSize ?? Offset.zero,
-        _logoImageSize = logoImageSize ?? Offset.zero,
-        _tshirtGlobalPosition = tshirtGlobalPosition ?? Offset.zero;
+        _logoImage = logoImage;
 
   String get tshirtImage => _tshirtImage;
   String get logoImage => _logoImage;
@@ -41,6 +29,7 @@ class MockupController with ChangeNotifier {
   Offset get tshirtImageSize => _tshirtImageSize;
   Offset get logoImageSize => _logoImageSize;
   Offset get tshirtGlobalPosition => _tshirtGlobalPosition;
+  int get mouseMode => _mouseMode;
 
   Offset get logoGlobalPosition => Offset(
         tshirtGlobalPosition.dx + logoPosition.dx,
@@ -97,6 +86,10 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
+  set mouseMode(int value) {
+    _mouseMode = value;
+  }
+
   Size _calculateNewImageSize(Size imageSize, Size screenSize) {
     final imageAspectRatio = imageSize.width / imageSize.height;
     final screenAspectRatio = screenSize.width / screenSize.height;
@@ -133,7 +126,7 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  void resizeLogoUsingScroll(double newScale, Offset newOffset) {
+  void resizeLogo(double newScale, Offset newOffset) {
     _logoScale = newScale;
     _logoPosition = newOffset;
     notifyListeners();

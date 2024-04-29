@@ -12,8 +12,6 @@ class Logo2 extends StatefulWidget {
 
 class _Logo2State extends State<Logo2> {
   late final MockupController controller = widget.controller;
-  final ValueNotifier<Offset> transformOffset = ValueNotifier(Offset.zero);
-  final ValueNotifier<double> transformScale = ValueNotifier(1.0);
   Offset pointScale = Offset.zero;
   double previousScale = 1;
   double previousLogoRotation = 0;
@@ -67,9 +65,11 @@ class _Logo2State extends State<Logo2> {
           return LayoutBuilder(builder: (context, constraints) {
             if (previousConstraints != constraints.biggest) {
               previousConstraints = constraints.biggest;
-              controller.constraintsUpdate(
-                constraints.biggest,
-              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                controller.constraintsUpdate(
+                  constraints.biggest,
+                );
+              });
             }
             return Stack(
               children: [
@@ -125,24 +125,49 @@ class _Logo2State extends State<Logo2> {
           : Listener(
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
-                  final previousImageSize = controller.logoWidgetSize;
+                  final pointScale = Offset(
+                    event.localPosition.dx / controller.logoWidgetSize.dx,
+                    event.localPosition.dy / controller.logoWidgetSize.dy,
+                  );
                   final newScale =
                       (controller.logoScale - event.scrollDelta.dy / 1000).clamp(0.1, 10.0);
                   final imageSize = Offset(
                       controller.logoImageSize.dx * controller.tshirtScale * newScale,
                       controller.logoImageSize.dy * controller.tshirtScale * newScale);
-                  final sizeDifference = (previousImageSize - imageSize) / 2;
-                  final newOffset = controller.logoPosition + sizeDifference;
 
-                  controller.resizeLogoUsingScroll(newScale, newOffset);
+                  Offset newOffset = event.position -
+                      controller.tshirtGlobalPosition +
+                      Offset(
+                        -imageSize.dx * pointScale.dx,
+                        -imageSize.dy * pointScale.dy,
+                      );
+
+                  controller.resizeAndRotateLogo(newScale, newOffset, previousLogoRotation);
+                }
+                if (event is PointerScaleEvent) {
+                  final newScale = controller.logoScale * event.scale;
+                  final pointScale = Offset(
+                    event.localPosition.dx / controller.logoWidgetSize.dx,
+                    event.localPosition.dy / controller.logoWidgetSize.dy,
+                  );
+                  final newImageSize = Offset(
+                      controller.logoImageSize.dx * controller.tshirtScale * newScale,
+                      controller.logoImageSize.dy * controller.tshirtScale * newScale);
+
+                  Offset newOffset = event.position -
+                      controller.tshirtGlobalPosition +
+                      Offset(
+                        -newImageSize.dx * pointScale.dx,
+                        -newImageSize.dy * pointScale.dy,
+                      );
+                  controller.resizeLogo(newScale, newOffset);
                 }
               },
               child: GestureDetector(
                 onScaleStart: (details) {
-                  Offset pointOffset = details.focalPoint - controller.logoGlobalPosition;
                   pointScale = Offset(
-                    pointOffset.dx / controller.logoWidgetSize.dx,
-                    pointOffset.dy / controller.logoWidgetSize.dy,
+                    details.localFocalPoint.dx / controller.logoWidgetSize.dx,
+                    details.localFocalPoint.dy / controller.logoWidgetSize.dy,
                   );
                   previousScale = controller.logoScale;
                   previousLogoRotation = controller.logoRotation;
