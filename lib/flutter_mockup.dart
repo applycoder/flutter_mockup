@@ -11,10 +11,10 @@ class MockupWidget extends StatefulWidget {
 
   MockupWidget({super.key, MockupController? controller})
       : _controller = controller ??
-            MockupController(const MockupData(
+            MockupController(
               tshirtImage: '',
               logoImage: '',
-            ));
+            );
 
   @override
   State<MockupWidget> createState() => _MockupWidgetState();

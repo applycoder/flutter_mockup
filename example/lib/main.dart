@@ -14,10 +14,8 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   final MockupController _controller = MockupController(
-    const MockupData(
-      tshirtImage: 'assets/tshirt.png',
-      logoImage: 'assets/design2.png',
-    ),
+    tshirtImage: 'assets/tshirt.png',
+    logoImage: 'assets/design2.png',
   );
   @override
   Widget build(BuildContext context) {
