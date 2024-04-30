@@ -1,35 +1,45 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:screenshot/screenshot.dart';
 
 class MockupController with ChangeNotifier {
+  ScreenshotController screenshotController;
   String _tshirtImage;
   String _logoImage;
   Offset _logoPosition = Offset.zero;
   double _logoScale = 1.0;
-  double _logoRotation = 0.0;
+  double _logoRotationZ = 0.0;
+  double _logoRotationX = 0.0;
+  double _logoRotationY = 0.0;
   double _tshirtScale = 1.0;
   Offset _tshirtImageSize = Offset.zero;
   Offset _logoImageSize = Offset.zero;
   Offset _tshirtGlobalPosition = Offset.zero;
-  int _mouseMode = 0;
+  int _maxResolutionOfRender = 500;
 
   MockupController({
+    required this.screenshotController,
     required String tshirtImage,
     required String logoImage,
   })  : _tshirtImage = tshirtImage,
-        _logoImage = logoImage;
+        _logoImage = logoImage {
+    setLogoAndTshirtResolutions();
+  }
 
   String get tshirtImage => _tshirtImage;
   String get logoImage => _logoImage;
   Offset get logoPosition => _logoPosition;
   double get logoScale => _logoScale;
-  double get logoRotation => _logoRotation;
+  double get logoRotationZ => _logoRotationZ;
+  double get logoRotationX => _logoRotationX;
+  double get logoRotationY => _logoRotationY;
   double get tshirtScale => _tshirtScale;
   Offset get tshirtImageSize => _tshirtImageSize;
   Offset get logoImageSize => _logoImageSize;
   Offset get tshirtGlobalPosition => _tshirtGlobalPosition;
-  int get mouseMode => _mouseMode;
+  int get maxResolutionOfRender => _maxResolutionOfRender;
 
   Offset get logoGlobalPosition => Offset(
         tshirtGlobalPosition.dx + logoPosition.dx,
@@ -43,11 +53,13 @@ class MockupController with ChangeNotifier {
 
   set tshirtImage(String value) {
     _tshirtImage = value;
+    setLogoAndTshirtResolutions();
     notifyListeners();
   }
 
   set logoImage(String value) {
     _logoImage = value;
+    setLogoAndTshirtResolutions();
     notifyListeners();
   }
 
@@ -61,8 +73,18 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  set logoRotation(double value) {
-    _logoRotation = value;
+  set logoRotationZ(double value) {
+    _logoRotationZ = value;
+    notifyListeners();
+  }
+
+  set logoRotationX(double value) {
+    _logoRotationX = value;
+    notifyListeners();
+  }
+
+  set logoRotationY(double value) {
+    _logoRotationY = value;
     notifyListeners();
   }
 
@@ -86,8 +108,9 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  set mouseMode(int value) {
-    _mouseMode = value;
+  set maxResolutionOfRender(int value) {
+    _maxResolutionOfRender = value;
+    notifyListeners();
   }
 
   Size _calculateNewImageSize(Size imageSize, Size screenSize) {
@@ -135,18 +158,81 @@ class MockupController with ChangeNotifier {
   void resizeAndRotateLogo(double newScale, Offset newOffset, double newRotation) {
     _logoScale = newScale;
     _logoPosition = newOffset;
-    _logoRotation = newRotation;
+    _logoRotationZ = newRotation;
     notifyListeners();
+  }
+
+  Future<Uint8List?> generateMockupImage() async {
+    final maxPx = max(tshirtImageSize.dx, tshirtImageSize.dy);
+    final scale = _maxResolutionOfRender / maxPx;
+    final image = await screenshotController.captureFromWidget(
+      Stack(
+        children: [
+          Image.asset(
+            tshirtImage,
+          ),
+          Positioned(
+            left: logoPosition.dx,
+            top: logoPosition.dy,
+            child: Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateX(logoRotationX)
+                ..rotateY(logoRotationY)
+                ..rotateZ(logoRotationZ),
+              child: Image.asset(
+                logoImage,
+                width: logoImageSize.dx * tshirtScale * logoScale,
+                height: logoImageSize.dy * tshirtScale * logoScale,
+              ),
+            ),
+          ),
+        ],
+      ),
+      pixelRatio: 1 / tshirtScale * scale,
+    );
+    return image;
   }
 
   void reset() {
     _logoPosition = Offset.zero;
     _logoScale = 1.0;
-    _logoRotation = 0.0;
+    _logoRotationZ = 0.0;
     _tshirtScale = 1.0;
     _tshirtImageSize = Offset.zero;
     _logoImageSize = Offset.zero;
     _tshirtGlobalPosition = Offset.zero;
     notifyListeners();
+  }
+
+  void setLogoAndTshirtResolutions() {
+    final tshirtWidget = Image.asset(
+      tshirtImage,
+      fit: BoxFit.contain,
+    );
+    final logoWidget = Image.asset(
+      logoImage,
+      fit: BoxFit.contain,
+    );
+    tshirtWidget.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener(
+        (info, _) {
+          tshirtImageSize = Offset(
+            info.image.width.toDouble(),
+            info.image.height.toDouble(),
+          );
+        },
+      ),
+    );
+    logoWidget.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener(
+        (info, _) {
+          logoImageSize = Offset(
+            info.image.width.toDouble(),
+            info.image.height.toDouble(),
+          );
+        },
+      ),
+    );
   }
 }

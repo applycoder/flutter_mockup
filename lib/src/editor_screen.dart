@@ -2,54 +2,23 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mockup/flutter_mockup.dart';
 
-class Logo2 extends StatefulWidget {
+class EditorScreen extends StatefulWidget {
   final MockupController controller;
-  const Logo2({super.key, required this.controller});
+  const EditorScreen({super.key, required this.controller});
 
   @override
-  State<Logo2> createState() => _Logo2State();
+  State<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _Logo2State extends State<Logo2> {
+class _EditorScreenState extends State<EditorScreen> {
   late final MockupController controller = widget.controller;
+  String previousTshirtImage = '';
+  String previousLogoImage = '';
   Offset pointScale = Offset.zero;
   double previousScale = 1;
   double previousLogoRotation = 0;
   Size previousConstraints = Size.zero;
   double cornersSize = 10;
-  @override
-  void initState() {
-    super.initState();
-
-    final tshirtImage = Image.asset(
-      widget.controller.tshirtImage,
-      fit: BoxFit.contain,
-    );
-    final logoImage = Image.asset(
-      controller.logoImage,
-      fit: BoxFit.contain,
-    );
-    tshirtImage.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener(
-        (info, _) {
-          controller.tshirtImageSize = Offset(
-            info.image.width.toDouble(),
-            info.image.height.toDouble(),
-          );
-        },
-      ),
-    );
-    logoImage.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener(
-        (info, _) {
-          controller.logoImageSize = Offset(
-            info.image.width.toDouble(),
-            info.image.height.toDouble(),
-          );
-        },
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +26,9 @@ class _Logo2State extends State<Logo2> {
         listenable: controller,
         builder: (context, child) {
           if (controller.tshirtImageSize == Offset.zero ||
-              controller.logoImageSize == Offset.zero) {
+              controller.logoImageSize == Offset.zero ||
+              controller.tshirtImage.isEmpty ||
+              controller.logoImage.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -71,49 +42,55 @@ class _Logo2State extends State<Logo2> {
                 );
               });
             }
-            return Stack(
-              children: [
-                Positioned(
-                  left: controller.tshirtGlobalPosition.dx,
-                  top: controller.tshirtGlobalPosition.dy,
-                  child: Image.asset(
-                    controller.tshirtImage,
-                    width: controller.tshirtImageSize.dx * controller.tshirtScale,
-                    height: controller.tshirtImageSize.dy * controller.tshirtScale,
-                  ),
-                ),
-                Positioned(
-                  left: controller.logoGlobalPosition.dx,
-                  top: controller.logoGlobalPosition.dy,
-                  child: _buildLogo(),
-                ),
-                Positioned(
-                  left: controller.tshirtGlobalPosition.dx,
-                  top: controller.tshirtGlobalPosition.dy,
-                  child: Image.asset(
-                    controller.tshirtImage,
-                    color: Colors.white.withOpacity(.9),
-                    colorBlendMode: BlendMode.srcOut,
-                    width: controller.tshirtImageSize.dx * controller.tshirtScale,
-                    height: controller.tshirtImageSize.dy * controller.tshirtScale,
-                  ),
-                ),
-                Positioned(
-                  left: controller.logoGlobalPosition.dx,
-                  top: controller.logoGlobalPosition.dy,
-                  child: _buildLogo(showLogo: false),
-                ),
-              ],
-            );
+            return _buildMockupWidget();
           });
         });
+  }
+
+  Widget _buildMockupWidget() {
+    return Stack(
+      children: [
+        Positioned(
+          left: controller.tshirtGlobalPosition.dx,
+          top: controller.tshirtGlobalPosition.dy,
+          child: Image.asset(
+            controller.tshirtImage,
+            width: controller.tshirtImageSize.dx * controller.tshirtScale,
+            height: controller.tshirtImageSize.dy * controller.tshirtScale,
+          ),
+        ),
+        Positioned(
+          left: controller.logoGlobalPosition.dx,
+          top: controller.logoGlobalPosition.dy,
+          child: _buildLogo(),
+        ),
+        Positioned(
+          left: controller.tshirtGlobalPosition.dx,
+          top: controller.tshirtGlobalPosition.dy,
+          child: Image.asset(
+            controller.tshirtImage,
+            color: Colors.white.withOpacity(.9),
+            colorBlendMode: BlendMode.srcOut,
+            width: controller.tshirtImageSize.dx * controller.tshirtScale,
+            height: controller.tshirtImageSize.dy * controller.tshirtScale,
+          ),
+        ),
+        Positioned(
+          left: controller.logoGlobalPosition.dx,
+          top: controller.logoGlobalPosition.dy,
+          child: _buildLogo(showLogo: false),
+        ),
+      ],
+    );
   }
 
   Widget _buildLogo({bool showLogo = true}) {
     return Transform(
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
-        ..rotateZ(controller.logoRotation),
+        ..rotateX(controller.logoRotationX)
+        ..rotateY(controller.logoRotationY)
+        ..rotateZ(controller.logoRotationZ),
       alignment: Alignment.center,
       child: showLogo
           ? Image.asset(
@@ -170,7 +147,7 @@ class _Logo2State extends State<Logo2> {
                     details.localFocalPoint.dy / controller.logoWidgetSize.dy,
                   );
                   previousScale = controller.logoScale;
-                  previousLogoRotation = controller.logoRotation;
+                  previousLogoRotation = controller.logoRotationZ;
                 },
                 onScaleUpdate: (details) {
                   final newScale = previousScale * (details.scale);
