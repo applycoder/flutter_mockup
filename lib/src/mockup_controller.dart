@@ -6,105 +6,105 @@ import 'package:screenshot/screenshot.dart';
 
 class MockupController with ChangeNotifier {
   ScreenshotController screenshotController;
-  String _tshirtImage;
-  String _logoImage;
-  Offset _logoPosition = Offset.zero;
-  double _logoScale = 1.0;
-  double _logoRotationZ = 0.0;
-  double _logoRotationX = 0.0;
-  double _logoRotationY = 0.0;
-  double _tshirtScale = 1.0;
-  Offset _tshirtImageSize = Offset.zero;
-  Offset _logoImageSize = Offset.zero;
-  Offset _tshirtGlobalPosition = Offset.zero;
+  String _background;
+  String _design;
+  Offset _designPosition = Offset.zero;
+  double _designScale = 1.0;
+  double _designRotationZ = 0.0;
+  double _designRotationX = 0.0;
+  double _designRotationY = 0.0;
+  double _backgroundScale = 1.0;
+  Offset _backgroundSize = Offset.zero;
+  Offset _designSize = Offset.zero;
+  Offset _backgroundGlobalPosition = Offset.zero;
   int _maxResolutionOfRender = 500;
 
   MockupController({
     required this.screenshotController,
-    required String tshirtImage,
-    required String logoImage,
-  })  : _tshirtImage = tshirtImage,
-        _logoImage = logoImage {
-    setLogoAndTshirtResolutions();
+    required String background,
+    required String design,
+  })  : _background = background,
+        _design = design {
+    setLogoAndBackgroundResolutions();
   }
 
-  String get tshirtImage => _tshirtImage;
-  String get logoImage => _logoImage;
-  Offset get logoPosition => _logoPosition;
-  double get logoScale => _logoScale;
-  double get logoRotationZ => _logoRotationZ;
-  double get logoRotationX => _logoRotationX;
-  double get logoRotationY => _logoRotationY;
-  double get tshirtScale => _tshirtScale;
-  Offset get tshirtImageSize => _tshirtImageSize;
-  Offset get logoImageSize => _logoImageSize;
-  Offset get tshirtGlobalPosition => _tshirtGlobalPosition;
+  String get background => _background;
+  String get design => _design;
+  Offset get designPosition => _designPosition;
+  double get designScale => _designScale;
+  double get designRotationZ => _designRotationZ;
+  double get designRotationX => _designRotationX;
+  double get designRotationY => _designRotationY;
+  double get backgroundScale => _backgroundScale;
+  Offset get backgroundSize => _backgroundSize;
+  Offset get designSize => _designSize;
+  Offset get backgroundGlobalPosition => _backgroundGlobalPosition;
   int get maxResolutionOfRender => _maxResolutionOfRender;
 
-  Offset get logoGlobalPosition => Offset(
-        tshirtGlobalPosition.dx + logoPosition.dx,
-        tshirtGlobalPosition.dy + logoPosition.dy,
+  Offset get designGlobalPosition => Offset(
+        backgroundGlobalPosition.dx + designPosition.dx,
+        backgroundGlobalPosition.dy + designPosition.dy,
       );
 
-  Offset get logoWidgetSize => Offset(
-        logoImageSize.dx * tshirtScale * logoScale,
-        logoImageSize.dy * tshirtScale * logoScale,
+  Offset get designWidgetSize => Offset(
+        designSize.dx * backgroundScale * designScale,
+        designSize.dy * backgroundScale * designScale,
       );
 
-  set tshirtImage(String value) {
-    _tshirtImage = value;
-    setLogoAndTshirtResolutions();
+  set background(String value) {
+    _background = value;
+    setLogoAndBackgroundResolutions();
     notifyListeners();
   }
 
-  set logoImage(String value) {
-    _logoImage = value;
-    setLogoAndTshirtResolutions();
+  set design(String value) {
+    _design = value;
+    setLogoAndBackgroundResolutions();
     notifyListeners();
   }
 
-  set logoPosition(Offset value) {
-    _logoPosition = value;
+  set designPosition(Offset value) {
+    _designPosition = value;
     notifyListeners();
   }
 
-  set logoScale(double value) {
-    _logoScale = value;
+  set designScale(double value) {
+    _designScale = value;
     notifyListeners();
   }
 
-  set logoRotationZ(double value) {
-    _logoRotationZ = value;
+  set designRotationZ(double value) {
+    _designRotationZ = value;
     notifyListeners();
   }
 
-  set logoRotationX(double value) {
-    _logoRotationX = value;
+  set designRotationX(double value) {
+    _designRotationX = value;
     notifyListeners();
   }
 
-  set logoRotationY(double value) {
-    _logoRotationY = value;
+  set designRotationY(double value) {
+    _designRotationY = value;
     notifyListeners();
   }
 
-  set tshirtScale(double value) {
-    _tshirtScale = value;
+  set backgroundScale(double value) {
+    _backgroundScale = value;
     notifyListeners();
   }
 
-  set tshirtImageSize(Offset value) {
-    _tshirtImageSize = value;
+  set backgroundSize(Offset value) {
+    _backgroundSize = value;
     notifyListeners();
   }
 
-  set logoImageSize(Offset value) {
-    _logoImageSize = value;
+  set designSize(Offset value) {
+    _designSize = value;
     notifyListeners();
   }
 
-  set tshirtGlobalPosition(Offset value) {
-    _tshirtGlobalPosition = value;
+  set backgroundGlobalPosition(Offset value) {
+    _backgroundGlobalPosition = value;
     notifyListeners();
   }
 
@@ -113,7 +113,7 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  Size _calculateNewImageSize(Size imageSize, Size screenSize) {
+  Size _calculateNewBackgroundSize(Size imageSize, Size screenSize) {
     final imageAspectRatio = imageSize.width / imageSize.height;
     final screenAspectRatio = screenSize.width / screenSize.height;
 
@@ -129,95 +129,95 @@ class MockupController with ChangeNotifier {
   }
 
   void constraintsUpdate(Size constraints) {
-    // Get the size of the tshirt image
-    final tshirtWidgetSize =
-        _calculateNewImageSize(Size(tshirtImageSize.dx, tshirtImageSize.dy), constraints);
-    final tshirtGlobalPosition = Offset(
-      (constraints.width - tshirtWidgetSize.width) / 2,
-      (constraints.height - tshirtWidgetSize.height) / 2,
+    // Get the size of the tshirt
+    final backgroundWidgetSize =
+        _calculateNewBackgroundSize(Size(backgroundSize.dx, backgroundSize.dy), constraints);
+    final backgroundGlobalPosition = Offset(
+      (constraints.width - backgroundWidgetSize.width) / 2,
+      (constraints.height - backgroundWidgetSize.height) / 2,
     );
     // Calculate the scale of the tshirt image
-    final tshirtCurrentScale = min(
-        tshirtWidgetSize.width / tshirtImageSize.dx, tshirtWidgetSize.height / tshirtImageSize.dy);
-    _logoPosition = Offset(
-      logoPosition.dx * tshirtCurrentScale / tshirtScale,
-      logoPosition.dy * tshirtCurrentScale / tshirtScale,
+    final newBackgroundImageScale = min(backgroundWidgetSize.width / backgroundSize.dx,
+        backgroundWidgetSize.height / backgroundSize.dy);
+    _designPosition = Offset(
+      designPosition.dx * newBackgroundImageScale / backgroundScale,
+      designPosition.dy * newBackgroundImageScale / backgroundScale,
     );
-    _tshirtScale = tshirtCurrentScale;
-    _tshirtGlobalPosition = tshirtGlobalPosition;
-    _logoImageSize = logoImageSize;
+    _backgroundScale = newBackgroundImageScale;
+    _backgroundGlobalPosition = backgroundGlobalPosition;
+    _designSize = designSize;
     notifyListeners();
   }
 
-  void resizeLogo(double newScale, Offset newOffset) {
-    _logoScale = newScale;
-    _logoPosition = newOffset;
+  void resizeDesign(double newScale, Offset newOffset) {
+    _designScale = newScale;
+    _designPosition = newOffset;
     notifyListeners();
   }
 
-  void resizeAndRotateLogo(double newScale, Offset newOffset, double newRotation) {
-    _logoScale = newScale;
-    _logoPosition = newOffset;
-    _logoRotationZ = newRotation;
+  void resizeAndRotateDesign(double newScale, Offset newOffset, double newRotation) {
+    _designScale = newScale;
+    _designPosition = newOffset;
+    _designRotationZ = newRotation;
     notifyListeners();
   }
 
-  Future<Uint8List?> generateMockupImage() async {
-    final maxPx = max(tshirtImageSize.dx, tshirtImageSize.dy);
+  Future<Uint8List?> generateMockedUpImage() async {
+    final maxPx = max(backgroundSize.dx, backgroundSize.dy);
     final scale = _maxResolutionOfRender / maxPx;
     final image = await screenshotController.captureFromWidget(
       Stack(
         children: [
           Image.asset(
-            tshirtImage,
+            background,
           ),
           Positioned(
-            left: logoPosition.dx,
-            top: logoPosition.dy,
+            left: designPosition.dx,
+            top: designPosition.dy,
             child: Transform(
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.001)
-                ..rotateX(logoRotationX)
-                ..rotateY(logoRotationY)
-                ..rotateZ(logoRotationZ),
+                ..rotateX(designRotationX)
+                ..rotateY(designRotationY)
+                ..rotateZ(designRotationZ),
               child: Image.asset(
-                logoImage,
-                width: logoImageSize.dx * tshirtScale * logoScale,
-                height: logoImageSize.dy * tshirtScale * logoScale,
+                design,
+                width: designSize.dx * backgroundScale * designScale,
+                height: designSize.dy * backgroundScale * designScale,
               ),
             ),
           ),
         ],
       ),
-      pixelRatio: 1 / tshirtScale * scale,
+      pixelRatio: 1 / backgroundScale * scale,
     );
     return image;
   }
 
   void reset() {
-    _logoPosition = Offset.zero;
-    _logoScale = 1.0;
-    _logoRotationZ = 0.0;
-    _tshirtScale = 1.0;
-    _tshirtImageSize = Offset.zero;
-    _logoImageSize = Offset.zero;
-    _tshirtGlobalPosition = Offset.zero;
+    _designPosition = Offset.zero;
+    _designScale = 1.0;
+    _designRotationZ = 0.0;
+    _backgroundScale = 1.0;
+    _backgroundSize = Offset.zero;
+    _designSize = Offset.zero;
+    _backgroundGlobalPosition = Offset.zero;
     notifyListeners();
   }
 
-  void setLogoAndTshirtResolutions() {
+  void setLogoAndBackgroundResolutions() {
     final tshirtWidget = Image.asset(
-      tshirtImage,
+      background,
       fit: BoxFit.contain,
     );
     final logoWidget = Image.asset(
-      logoImage,
+      design,
       fit: BoxFit.contain,
     );
     tshirtWidget.image.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener(
         (info, _) {
-          tshirtImageSize = Offset(
+          backgroundSize = Offset(
             info.image.width.toDouble(),
             info.image.height.toDouble(),
           );
@@ -227,7 +227,7 @@ class MockupController with ChangeNotifier {
     logoWidget.image.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener(
         (info, _) {
-          logoImageSize = Offset(
+          designSize = Offset(
             info.image.width.toDouble(),
             info.image.height.toDouble(),
           );

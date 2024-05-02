@@ -25,10 +25,10 @@ class _EditorScreenState extends State<EditorScreen> {
     return ListenableBuilder(
         listenable: controller,
         builder: (context, child) {
-          if (controller.tshirtImageSize == Offset.zero ||
-              controller.logoImageSize == Offset.zero ||
-              controller.tshirtImage.isEmpty ||
-              controller.logoImage.isEmpty) {
+          if (controller.backgroundSize == Offset.zero ||
+              controller.designSize == Offset.zero ||
+              controller.background.isEmpty ||
+              controller.design.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -51,33 +51,33 @@ class _EditorScreenState extends State<EditorScreen> {
     return Stack(
       children: [
         Positioned(
-          left: controller.tshirtGlobalPosition.dx,
-          top: controller.tshirtGlobalPosition.dy,
+          left: controller.backgroundGlobalPosition.dx,
+          top: controller.backgroundGlobalPosition.dy,
           child: Image.asset(
-            controller.tshirtImage,
-            width: controller.tshirtImageSize.dx * controller.tshirtScale,
-            height: controller.tshirtImageSize.dy * controller.tshirtScale,
+            controller.background,
+            width: controller.backgroundSize.dx * controller.backgroundScale,
+            height: controller.backgroundSize.dy * controller.backgroundScale,
           ),
         ),
         Positioned(
-          left: controller.logoGlobalPosition.dx,
-          top: controller.logoGlobalPosition.dy,
+          left: controller.designGlobalPosition.dx,
+          top: controller.designGlobalPosition.dy,
           child: _buildLogo(),
         ),
         Positioned(
-          left: controller.tshirtGlobalPosition.dx,
-          top: controller.tshirtGlobalPosition.dy,
+          left: controller.backgroundGlobalPosition.dx,
+          top: controller.backgroundGlobalPosition.dy,
           child: Image.asset(
-            controller.tshirtImage,
+            controller.background,
             color: Colors.white.withOpacity(.9),
             colorBlendMode: BlendMode.srcOut,
-            width: controller.tshirtImageSize.dx * controller.tshirtScale,
-            height: controller.tshirtImageSize.dy * controller.tshirtScale,
+            width: controller.backgroundSize.dx * controller.backgroundScale,
+            height: controller.backgroundSize.dy * controller.backgroundScale,
           ),
         ),
         Positioned(
-          left: controller.logoGlobalPosition.dx,
-          top: controller.logoGlobalPosition.dy,
+          left: controller.designGlobalPosition.dx,
+          top: controller.designGlobalPosition.dy,
           child: _buildLogo(showLogo: false),
         ),
       ],
@@ -88,85 +88,85 @@ class _EditorScreenState extends State<EditorScreen> {
     return Transform(
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
-        ..rotateX(controller.logoRotationX)
-        ..rotateY(controller.logoRotationY)
-        ..rotateZ(controller.logoRotationZ),
+        ..rotateX(controller.designRotationX)
+        ..rotateY(controller.designRotationY)
+        ..rotateZ(controller.designRotationZ),
       alignment: Alignment.center,
       child: showLogo
           ? Image.asset(
-              controller.logoImage,
+              controller.design,
               fit: BoxFit.contain,
-              width: controller.logoWidgetSize.dx,
-              height: controller.logoWidgetSize.dy,
+              width: controller.designWidgetSize.dx,
+              height: controller.designWidgetSize.dy,
             )
           : Listener(
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
                   final pointScale = Offset(
-                    event.localPosition.dx / controller.logoWidgetSize.dx,
-                    event.localPosition.dy / controller.logoWidgetSize.dy,
+                    event.localPosition.dx / controller.designWidgetSize.dx,
+                    event.localPosition.dy / controller.designWidgetSize.dy,
                   );
                   final newScale =
-                      (controller.logoScale - event.scrollDelta.dy / 1000).clamp(0.1, 10.0);
+                      (controller.designScale - event.scrollDelta.dy / 1000).clamp(0.1, 10.0);
                   final imageSize = Offset(
-                      controller.logoImageSize.dx * controller.tshirtScale * newScale,
-                      controller.logoImageSize.dy * controller.tshirtScale * newScale);
+                      controller.designSize.dx * controller.backgroundScale * newScale,
+                      controller.designSize.dy * controller.backgroundScale * newScale);
 
                   Offset newOffset = event.position -
-                      controller.tshirtGlobalPosition +
+                      controller.backgroundGlobalPosition +
                       Offset(
                         -imageSize.dx * pointScale.dx,
                         -imageSize.dy * pointScale.dy,
                       );
 
-                  controller.resizeAndRotateLogo(newScale, newOffset, previousLogoRotation);
+                  controller.resizeAndRotateDesign(newScale, newOffset, previousLogoRotation);
                 }
                 if (event is PointerScaleEvent) {
-                  final newScale = controller.logoScale * event.scale;
+                  final newScale = controller.designScale * event.scale;
                   final pointScale = Offset(
-                    event.localPosition.dx / controller.logoWidgetSize.dx,
-                    event.localPosition.dy / controller.logoWidgetSize.dy,
+                    event.localPosition.dx / controller.designWidgetSize.dx,
+                    event.localPosition.dy / controller.designWidgetSize.dy,
                   );
                   final newImageSize = Offset(
-                      controller.logoImageSize.dx * controller.tshirtScale * newScale,
-                      controller.logoImageSize.dy * controller.tshirtScale * newScale);
+                      controller.designSize.dx * controller.backgroundScale * newScale,
+                      controller.designSize.dy * controller.backgroundScale * newScale);
 
                   Offset newOffset = event.position -
-                      controller.tshirtGlobalPosition +
+                      controller.backgroundGlobalPosition +
                       Offset(
                         -newImageSize.dx * pointScale.dx,
                         -newImageSize.dy * pointScale.dy,
                       );
-                  controller.resizeLogo(newScale, newOffset);
+                  controller.resizeDesign(newScale, newOffset);
                 }
               },
               child: GestureDetector(
                 onScaleStart: (details) {
                   pointScale = Offset(
-                    details.localFocalPoint.dx / controller.logoWidgetSize.dx,
-                    details.localFocalPoint.dy / controller.logoWidgetSize.dy,
+                    details.localFocalPoint.dx / controller.designWidgetSize.dx,
+                    details.localFocalPoint.dy / controller.designWidgetSize.dy,
                   );
-                  previousScale = controller.logoScale;
-                  previousLogoRotation = controller.logoRotationZ;
+                  previousScale = controller.designScale;
+                  previousLogoRotation = controller.designRotationZ;
                 },
                 onScaleUpdate: (details) {
                   final newScale = previousScale * (details.scale);
                   final newImageSize = Offset(
-                      controller.logoImageSize.dx * controller.tshirtScale * newScale,
-                      controller.logoImageSize.dy * controller.tshirtScale * newScale);
+                      controller.designSize.dx * controller.backgroundScale * newScale,
+                      controller.designSize.dy * controller.backgroundScale * newScale);
 
                   Offset newOffset = details.focalPoint -
-                      controller.tshirtGlobalPosition +
+                      controller.backgroundGlobalPosition +
                       Offset(
                         -newImageSize.dx * pointScale.dx,
                         -newImageSize.dy * pointScale.dy,
                       );
                   final newRotation = details.rotation + previousLogoRotation;
-                  controller.resizeAndRotateLogo(newScale, newOffset, newRotation);
+                  controller.resizeAndRotateDesign(newScale, newOffset, newRotation);
                 },
                 child: Container(
-                  width: controller.logoWidgetSize.dx,
-                  height: controller.logoWidgetSize.dy,
+                  width: controller.designWidgetSize.dx,
+                  height: controller.designWidgetSize.dy,
                   color: Colors.transparent,
                 ),
               ),
