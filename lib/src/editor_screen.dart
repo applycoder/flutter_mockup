@@ -12,11 +12,11 @@ class EditorScreen extends StatefulWidget {
 
 class _EditorScreenState extends State<EditorScreen> {
   late final MockupController controller = widget.controller;
-  String previousTshirtImage = '';
-  String previousLogoImage = '';
+  String previousBackgroundImage = '';
+  String previousDesignImage = '';
   Offset pointScale = Offset.zero;
   double previousScale = 1;
-  double previousLogoRotation = 0;
+  double previousDesignRotation = 0;
   Size previousConstraints = Size.zero;
   double cornersSize = 10;
 
@@ -53,7 +53,7 @@ class _EditorScreenState extends State<EditorScreen> {
         Positioned(
           left: controller.backgroundGlobalPosition.dx,
           top: controller.backgroundGlobalPosition.dy,
-          child: Image.asset(
+          child: Image.network(
             controller.background,
             width: controller.backgroundSize.dx * controller.backgroundScale,
             height: controller.backgroundSize.dy * controller.backgroundScale,
@@ -67,7 +67,7 @@ class _EditorScreenState extends State<EditorScreen> {
         Positioned(
           left: controller.backgroundGlobalPosition.dx,
           top: controller.backgroundGlobalPosition.dy,
-          child: Image.asset(
+          child: Image.network(
             controller.background,
             color: Colors.white.withOpacity(.9),
             colorBlendMode: BlendMode.srcOut,
@@ -93,7 +93,7 @@ class _EditorScreenState extends State<EditorScreen> {
         ..rotateZ(controller.designRotationZ),
       alignment: Alignment.center,
       child: showLogo
-          ? Image.asset(
+          ? Image.network(
               controller.design,
               fit: BoxFit.contain,
               width: controller.designWidgetSize.dx,
@@ -119,7 +119,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         -imageSize.dy * pointScale.dy,
                       );
 
-                  controller.resizeAndRotateDesign(newScale, newOffset, previousLogoRotation);
+                  controller.resizeAndRotateDesign(newScale, newOffset, previousDesignRotation);
                 }
                 if (event is PointerScaleEvent) {
                   final newScale = controller.designScale * event.scale;
@@ -147,7 +147,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     details.localFocalPoint.dy / controller.designWidgetSize.dy,
                   );
                   previousScale = controller.designScale;
-                  previousLogoRotation = controller.designRotationZ;
+                  previousDesignRotation = controller.designRotationZ;
                 },
                 onScaleUpdate: (details) {
                   final newScale = previousScale * (details.scale);
@@ -161,7 +161,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         -newImageSize.dx * pointScale.dx,
                         -newImageSize.dy * pointScale.dy,
                       );
-                  final newRotation = details.rotation + previousLogoRotation;
+                  final newRotation = details.rotation + previousDesignRotation;
                   controller.resizeAndRotateDesign(newScale, newOffset, newRotation);
                 },
                 child: Container(

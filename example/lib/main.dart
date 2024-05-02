@@ -19,8 +19,8 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   final MockupController _controller = MockupController(
     screenshotController: ScreenshotController(),
-    background: 'assets/tshirt.png',
-    design: 'assets/design2.png',
+    backgroundUrl: 'assets/tshirt.png',
+    designUrl: 'assets/design2.png',
   );
 
   void saveImage(Uint8List image) {

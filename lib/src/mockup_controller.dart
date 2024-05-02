@@ -6,8 +6,8 @@ import 'package:screenshot/screenshot.dart';
 
 class MockupController with ChangeNotifier {
   ScreenshotController screenshotController;
-  String _background;
-  String _design;
+  String _backgroundUrl;
+  String _designUrl;
   Offset _designPosition = Offset.zero;
   double _designScale = 1.0;
   double _designRotationZ = 0.0;
@@ -21,15 +21,16 @@ class MockupController with ChangeNotifier {
 
   MockupController({
     required this.screenshotController,
-    required String background,
-    required String design,
-  })  : _background = background,
-        _design = design {
+    required String backgroundUrl,
+    String? designUrl,
+  })  : _backgroundUrl = backgroundUrl,
+        _designUrl =
+            designUrl ?? 'https://img001.prntscr.com/file/img001/lLO6c5AVTpSEIS_4QYnhAw.jpg' {
     setLogoAndBackgroundResolutions();
   }
 
-  String get background => _background;
-  String get design => _design;
+  String get background => _backgroundUrl;
+  String get design => _designUrl;
   Offset get designPosition => _designPosition;
   double get designScale => _designScale;
   double get designRotationZ => _designRotationZ;
@@ -52,13 +53,13 @@ class MockupController with ChangeNotifier {
       );
 
   set background(String value) {
-    _background = value;
+    _backgroundUrl = value;
     setLogoAndBackgroundResolutions();
     notifyListeners();
   }
 
   set design(String value) {
-    _design = value;
+    _designUrl = value;
     setLogoAndBackgroundResolutions();
     notifyListeners();
   }
@@ -206,33 +207,43 @@ class MockupController with ChangeNotifier {
   }
 
   void setLogoAndBackgroundResolutions() {
-    final tshirtWidget = Image.asset(
-      background,
-      fit: BoxFit.contain,
-    );
-    final logoWidget = Image.asset(
-      design,
-      fit: BoxFit.contain,
-    );
-    tshirtWidget.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener(
-        (info, _) {
-          backgroundSize = Offset(
-            info.image.width.toDouble(),
-            info.image.height.toDouble(),
-          );
+    try {
+      final tshirtWidget = Image.network(
+        background,
+        fit: BoxFit.contain,
+        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+          return const Text('Resim yüklenemedi');
         },
-      ),
-    );
-    logoWidget.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener(
-        (info, _) {
-          designSize = Offset(
-            info.image.width.toDouble(),
-            info.image.height.toDouble(),
-          );
+      );
+      final logoWidget = Image.network(
+        design,
+        fit: BoxFit.contain,
+        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+          return const Text('Resim yüklenemedi');
         },
-      ),
-    );
+      );
+      tshirtWidget.image.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener(
+          (info, _) {
+            backgroundSize = Offset(
+              info.image.width.toDouble(),
+              info.image.height.toDouble(),
+            );
+          },
+        ),
+      );
+      logoWidget.image.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener(
+          (info, _) {
+            designSize = Offset(
+              info.image.width.toDouble(),
+              info.image.height.toDouble(),
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      print('Hata: $e');
+    }
   }
 }
