@@ -27,8 +27,8 @@ class _EditorScreenState extends State<EditorScreen> {
         builder: (context, child) {
           if (controller.backgroundSize == Offset.zero ||
               controller.designSize == Offset.zero ||
-              controller.background.isEmpty ||
-              controller.design.isEmpty) {
+              controller.backgroundUrl.isEmpty ||
+              controller.designUrl.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -37,9 +37,7 @@ class _EditorScreenState extends State<EditorScreen> {
             if (previousConstraints != constraints.biggest) {
               previousConstraints = constraints.biggest;
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                controller.constraintsUpdate(
-                  constraints.biggest,
-                );
+                controller.constraintsUpdate(constraints.biggest);
               });
             }
             return _buildMockupWidget();
@@ -49,35 +47,36 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Widget _buildMockupWidget() {
     return Stack(
+      key: controller.widgetKey,
       children: [
-        Positioned(
-          left: controller.backgroundGlobalPosition.dx,
-          top: controller.backgroundGlobalPosition.dy,
+        Align(
+          alignment: Alignment.center,
           child: Image.network(
-            controller.background,
+            controller.backgroundUrl,
             width: controller.backgroundSize.dx * controller.backgroundScale,
             height: controller.backgroundSize.dy * controller.backgroundScale,
+            fit: BoxFit.contain,
           ),
         ),
         Positioned(
-          left: controller.designGlobalPosition.dx,
-          top: controller.designGlobalPosition.dy,
+          left: controller.designPositionOnWidget.dx,
+          top: controller.designPositionOnWidget.dy,
           child: _buildLogo(),
         ),
-        Positioned(
-          left: controller.backgroundGlobalPosition.dx,
-          top: controller.backgroundGlobalPosition.dy,
+        Align(
+          alignment: Alignment.center,
           child: Image.network(
-            controller.background,
+            controller.backgroundUrl,
             color: Colors.white.withOpacity(.9),
             colorBlendMode: BlendMode.srcOut,
             width: controller.backgroundSize.dx * controller.backgroundScale,
             height: controller.backgroundSize.dy * controller.backgroundScale,
+            fit: BoxFit.contain,
           ),
         ),
         Positioned(
-          left: controller.designGlobalPosition.dx,
-          top: controller.designGlobalPosition.dy,
+          left: controller.designPositionOnWidget.dx,
+          top: controller.designPositionOnWidget.dy,
           child: _buildLogo(showLogo: false),
         ),
       ],
@@ -94,10 +93,10 @@ class _EditorScreenState extends State<EditorScreen> {
       alignment: Alignment.center,
       child: showLogo
           ? Image.network(
-              controller.design,
-              fit: BoxFit.contain,
+              controller.designUrl,
               width: controller.designWidgetSize.dx,
               height: controller.designWidgetSize.dy,
+              fit: BoxFit.contain,
             )
           : Listener(
               onPointerSignal: (event) {
@@ -113,6 +112,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       controller.designSize.dy * controller.backgroundScale * newScale);
 
                   Offset newOffset = event.position -
+                      controller.widgetGlobalPosition -
                       controller.backgroundGlobalPosition +
                       Offset(
                         -imageSize.dx * pointScale.dx,
@@ -132,6 +132,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       controller.designSize.dy * controller.backgroundScale * newScale);
 
                   Offset newOffset = event.position -
+                      controller.widgetGlobalPosition -
                       controller.backgroundGlobalPosition +
                       Offset(
                         -newImageSize.dx * pointScale.dx,
@@ -154,8 +155,8 @@ class _EditorScreenState extends State<EditorScreen> {
                   final newImageSize = Offset(
                       controller.designSize.dx * controller.backgroundScale * newScale,
                       controller.designSize.dy * controller.backgroundScale * newScale);
-
                   Offset newOffset = details.focalPoint -
+                      controller.widgetGlobalPosition -
                       controller.backgroundGlobalPosition +
                       Offset(
                         -newImageSize.dx * pointScale.dx,

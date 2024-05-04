@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mockup/src/mockup_settings_model.dart';
 import 'package:screenshot/screenshot.dart';
 
 class MockupController with ChangeNotifier {
@@ -18,6 +19,7 @@ class MockupController with ChangeNotifier {
   Offset _designSize = Offset.zero;
   Offset _backgroundGlobalPosition = Offset.zero;
   int _maxResolutionOfRender = 500;
+  GlobalKey widgetKey = GlobalKey();
 
   MockupController({
     required this.screenshotController,
@@ -29,8 +31,8 @@ class MockupController with ChangeNotifier {
     setLogoAndBackgroundResolutions();
   }
 
-  String get background => _backgroundUrl;
-  String get design => _designUrl;
+  String get backgroundUrl => _backgroundUrl;
+  String get designUrl => _designUrl;
   Offset get designPosition => _designPosition;
   double get designScale => _designScale;
   double get designRotationZ => _designRotationZ;
@@ -39,12 +41,14 @@ class MockupController with ChangeNotifier {
   double get backgroundScale => _backgroundScale;
   Offset get backgroundSize => _backgroundSize;
   Offset get designSize => _designSize;
+  Offset get widgetGlobalPosition =>
+      (widgetKey.currentContext!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
   Offset get backgroundGlobalPosition => _backgroundGlobalPosition;
   int get maxResolutionOfRender => _maxResolutionOfRender;
 
-  Offset get designGlobalPosition => Offset(
-        backgroundGlobalPosition.dx + designPosition.dx,
-        backgroundGlobalPosition.dy + designPosition.dy,
+  Offset get designPositionOnWidget => Offset(
+        designPosition.dx + backgroundGlobalPosition.dx,
+        designPosition.dy + backgroundGlobalPosition.dy,
       );
 
   Offset get designWidgetSize => Offset(
@@ -52,13 +56,13 @@ class MockupController with ChangeNotifier {
         designSize.dy * backgroundScale * designScale,
       );
 
-  set background(String value) {
+  set backgroundUrl(String value) {
     _backgroundUrl = value;
     setLogoAndBackgroundResolutions();
     notifyListeners();
   }
 
-  set design(String value) {
+  set designUrl(String value) {
     _designUrl = value;
     setLogoAndBackgroundResolutions();
     notifyListeners();
@@ -99,13 +103,13 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  set designSize(Offset value) {
-    _designSize = value;
+  set backgroundGlobalPosition(Offset value) {
+    _backgroundGlobalPosition = value;
     notifyListeners();
   }
 
-  set backgroundGlobalPosition(Offset value) {
-    _backgroundGlobalPosition = value;
+  set designSize(Offset value) {
+    _designSize = value;
     notifyListeners();
   }
 
@@ -133,7 +137,7 @@ class MockupController with ChangeNotifier {
     // Get the size of the tshirt
     final backgroundWidgetSize =
         _calculateNewBackgroundSize(Size(backgroundSize.dx, backgroundSize.dy), constraints);
-    final backgroundGlobalPosition = Offset(
+    backgroundGlobalPosition = Offset(
       (constraints.width - backgroundWidgetSize.width) / 2,
       (constraints.height - backgroundWidgetSize.height) / 2,
     );
@@ -145,8 +149,6 @@ class MockupController with ChangeNotifier {
       designPosition.dy * newBackgroundImageScale / backgroundScale,
     );
     _backgroundScale = newBackgroundImageScale;
-    _backgroundGlobalPosition = backgroundGlobalPosition;
-    _designSize = designSize;
     notifyListeners();
   }
 
@@ -170,7 +172,7 @@ class MockupController with ChangeNotifier {
       Stack(
         children: [
           Image.asset(
-            background,
+            backgroundUrl,
           ),
           Positioned(
             left: designPosition.dx,
@@ -182,7 +184,7 @@ class MockupController with ChangeNotifier {
                 ..rotateY(designRotationY)
                 ..rotateZ(designRotationZ),
               child: Image.asset(
-                design,
+                designUrl,
                 width: designSize.dx * backgroundScale * designScale,
                 height: designSize.dy * backgroundScale * designScale,
               ),
@@ -195,28 +197,17 @@ class MockupController with ChangeNotifier {
     return image;
   }
 
-  void reset() {
-    _designPosition = Offset.zero;
-    _designScale = 1.0;
-    _designRotationZ = 0.0;
-    _backgroundScale = 1.0;
-    _backgroundSize = Offset.zero;
-    _designSize = Offset.zero;
-    _backgroundGlobalPosition = Offset.zero;
-    notifyListeners();
-  }
-
   void setLogoAndBackgroundResolutions() {
     try {
       final tshirtWidget = Image.network(
-        background,
+        backgroundUrl,
         fit: BoxFit.contain,
         errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
           return const Text('Resim yüklenemedi');
         },
       );
       final logoWidget = Image.network(
-        design,
+        designUrl,
         fit: BoxFit.contain,
         errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
           return const Text('Resim yüklenemedi');
@@ -245,5 +236,47 @@ class MockupController with ChangeNotifier {
     } catch (e) {
       print('Hata: $e');
     }
+  }
+
+  void reset() {
+    _designPosition = Offset.zero;
+    _designScale = 1.0;
+    _designRotationX = 0.0;
+    _designRotationY = 0.0;
+    _designRotationZ = 0.0;
+    _backgroundScale = 1.0;
+    _backgroundSize = Offset.zero;
+    _backgroundGlobalPosition = Offset.zero;
+    _maxResolutionOfRender = 500;
+    notifyListeners();
+  }
+
+  MockupSettingsModel toMockupSettings() {
+    return MockupSettingsModel(
+      backgroundUrl: _backgroundUrl,
+      designPosition: _designPosition,
+      designScale: _designScale,
+      designRotationX: _designRotationX,
+      designRotationY: _designRotationY,
+      designRotationZ: _designRotationZ,
+      backgroundScale: _backgroundScale,
+      backgroundSize: _backgroundSize,
+      backgroundGlobalPosition: _backgroundGlobalPosition,
+      maxResolutionOfRender: _maxResolutionOfRender,
+    );
+  }
+
+  void fromMockupSettings(MockupSettingsModel settings) {
+    _backgroundUrl = settings.backgroundUrl;
+    _designPosition = settings.designPosition;
+    _designScale = settings.designScale;
+    _designRotationX = settings.designRotationX;
+    _designRotationY = settings.designRotationY;
+    _designRotationZ = settings.designRotationZ;
+    _backgroundScale = settings.backgroundScale;
+    _backgroundSize = settings.backgroundSize;
+    _backgroundGlobalPosition = settings.backgroundGlobalPosition;
+    _maxResolutionOfRender = settings.maxResolutionOfRender;
+    notifyListeners();
   }
 }

@@ -38,21 +38,8 @@ class _MainAppState extends State<MainApp> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
-          child: Row(
-            children: [
-              Expanded(
-                child: MockupWidget(
-                  controller: _controller,
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final image = await _controller.screenshotController.capture();
-                  saveImage(image!);
-                },
-                child: const Text('Save Image'),
-              ),
-            ],
+          child: MockupWidget(
+            controller: _controller,
           ),
         ),
       ),
