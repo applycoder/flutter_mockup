@@ -198,28 +198,32 @@ class MockupController with ChangeNotifier {
     final maxPx = max(backgroundSize.dx, backgroundSize.dy);
     final scale = _maxResolutionOfRender / maxPx;
     final image = await screenshotController.captureFromWidget(
-      Stack(
-        children: [
-          Image.asset(
-            backgroundUrl,
-          ),
-          Positioned(
-            left: designPosition.dx,
-            top: designPosition.dy,
-            child: Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateX(designRotationX)
-                ..rotateY(designRotationY)
-                ..rotateZ(designRotationZ),
-              child: Image.asset(
-                designUrl,
-                width: designSize.dx * backgroundScale * designScale,
-                height: designSize.dy * backgroundScale * designScale,
+      LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              Image.network(
+                backgroundUrl,
               ),
-            ),
-          ),
-        ],
+              Positioned(
+                left: designPosition.dx,
+                top: designPosition.dy,
+                child: Transform(
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateX(designRotationX)
+                    ..rotateY(designRotationY)
+                    ..rotateZ(designRotationZ),
+                  child: Image.network(
+                    designUrl,
+                    width: designSize.dx * backgroundScale * designScale,
+                    height: designSize.dy * backgroundScale * designScale,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
       pixelRatio: 1 / backgroundScale * scale,
     );
