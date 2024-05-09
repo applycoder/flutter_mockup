@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mockup/src/mockup_settings_model.dart';
@@ -19,16 +21,36 @@ class MockupController with ChangeNotifier {
   Offset _designSize = Offset.zero;
   Offset _backgroundGlobalPosition = Offset.zero;
   int _maxResolutionOfRender = 500;
+  Size _constraints = Size.zero;
   GlobalKey widgetKey = GlobalKey();
 
   MockupController({
     required this.screenshotController,
     required String backgroundUrl,
+    Offset? designPosition,
+    double? designScale,
+    double? designRotationX,
+    double? designRotationY,
+    double? designRotationZ,
+    double? backgroundScale,
+    Offset? backgroundSize,
+    Offset? backgroundGlobalPosition,
+    int? maxResolutionOfRender,
     String? designUrl,
   })  : _backgroundUrl = backgroundUrl,
-        _designUrl =
-            designUrl ?? 'https://img001.prntscr.com/file/img001/lLO6c5AVTpSEIS_4QYnhAw.jpg' {
-    setLogoAndBackgroundResolutions();
+        _designUrl = designUrl ??
+            'https://firebasestorage.googleapis.com/v0/b/freative.appspot.com/o/MockupDesignTemplate%2FlLO6c5AVTpSEIS_4QYnhAw.jpg?alt=media&token=76aa2650-d3e7-4881-acc9-950f563278fc',
+        _designPosition = designPosition ?? Offset.zero,
+        _designScale = designScale ?? 1.0,
+        _designRotationX = designRotationX ?? 0.0,
+        _designRotationY = designRotationY ?? 0.0,
+        _designRotationZ = designRotationZ ?? 0.0,
+        _backgroundScale = backgroundScale ?? 1.0,
+        _backgroundSize = backgroundSize ?? Offset.zero,
+        _backgroundGlobalPosition = backgroundGlobalPosition ?? Offset.zero,
+        _maxResolutionOfRender = maxResolutionOfRender ?? 500 {
+    setBackgroundSize();
+    setLogoSize();
   }
 
   String get backgroundUrl => _backgroundUrl;
@@ -45,6 +67,7 @@ class MockupController with ChangeNotifier {
       (widgetKey.currentContext!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
   Offset get backgroundGlobalPosition => _backgroundGlobalPosition;
   int get maxResolutionOfRender => _maxResolutionOfRender;
+  Size get constraints => _constraints;
 
   Offset get designPositionOnWidget => Offset(
         designPosition.dx + backgroundGlobalPosition.dx,
@@ -58,13 +81,12 @@ class MockupController with ChangeNotifier {
 
   set backgroundUrl(String value) {
     _backgroundUrl = value;
-    setLogoAndBackgroundResolutions();
-    notifyListeners();
+    setBackgroundSize();
   }
 
   set designUrl(String value) {
     _designUrl = value;
-    setLogoAndBackgroundResolutions();
+    setLogoSize();
     notifyListeners();
   }
 
@@ -100,6 +122,7 @@ class MockupController with ChangeNotifier {
 
   set backgroundSize(Offset value) {
     _backgroundSize = value;
+    if (constraints != Size.zero) constraintsUpdate();
     notifyListeners();
   }
 
@@ -110,6 +133,7 @@ class MockupController with ChangeNotifier {
 
   set designSize(Offset value) {
     _designSize = value;
+    if (constraints != Size.zero) constraintsUpdate();
     notifyListeners();
   }
 
@@ -118,28 +142,34 @@ class MockupController with ChangeNotifier {
     notifyListeners();
   }
 
-  Size _calculateNewBackgroundSize(Size imageSize, Size screenSize) {
+  set constraints(Size value) {
+    _constraints = value;
+    if (value != Size.zero) constraintsUpdate();
+    notifyListeners();
+  }
+
+  Size _calculateBackgroundWidgetSize(Size imageSize) {
     final imageAspectRatio = imageSize.width / imageSize.height;
-    final screenAspectRatio = screenSize.width / screenSize.height;
+    final screenAspectRatio = _constraints.width / _constraints.height;
 
     if (imageAspectRatio > screenAspectRatio) {
-      final newWidth = screenSize.width;
+      final newWidth = _constraints.width;
       final newHeight = newWidth / imageAspectRatio;
       return Size(newWidth, newHeight);
     } else {
-      final newHeight = screenSize.height;
+      final newHeight = _constraints.height;
       final newWidth = newHeight * imageAspectRatio;
       return Size(newWidth, newHeight);
     }
   }
 
-  void constraintsUpdate(Size constraints) {
+  void constraintsUpdate() {
     // Get the size of the tshirt
     final backgroundWidgetSize =
-        _calculateNewBackgroundSize(Size(backgroundSize.dx, backgroundSize.dy), constraints);
+        _calculateBackgroundWidgetSize(Size(backgroundSize.dx, backgroundSize.dy));
     backgroundGlobalPosition = Offset(
-      (constraints.width - backgroundWidgetSize.width) / 2,
-      (constraints.height - backgroundWidgetSize.height) / 2,
+      (_constraints.width - backgroundWidgetSize.width) / 2,
+      (_constraints.height - backgroundWidgetSize.height) / 2,
     );
     // Calculate the scale of the tshirt image
     final newBackgroundImageScale = min(backgroundWidgetSize.width / backgroundSize.dx,
@@ -149,7 +179,6 @@ class MockupController with ChangeNotifier {
       designPosition.dy * newBackgroundImageScale / backgroundScale,
     );
     _backgroundScale = newBackgroundImageScale;
-    notifyListeners();
   }
 
   void resizeDesign(double newScale, Offset newOffset) {
@@ -197,42 +226,35 @@ class MockupController with ChangeNotifier {
     return image;
   }
 
-  void setLogoAndBackgroundResolutions() {
+  void setLogoSize() {
     try {
-      final tshirtWidget = Image.network(
-        backgroundUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-          return const Text('Resim yüklenemedi');
-        },
-      );
-      final logoWidget = Image.network(
-        designUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-          return const Text('Resim yüklenemedi');
-        },
-      );
-      tshirtWidget.image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener(
-          (info, _) {
-            backgroundSize = Offset(
-              info.image.width.toDouble(),
-              info.image.height.toDouble(),
-            );
-          },
-        ),
-      );
-      logoWidget.image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener(
-          (info, _) {
-            designSize = Offset(
-              info.image.width.toDouble(),
-              info.image.height.toDouble(),
-            );
-          },
-        ),
-      );
+      Image image = Image.network(designUrl);
+      Completer<ui.Image> completer = Completer<ui.Image>();
+      image.image
+          .resolve(const ImageConfiguration())
+          .addListener(ImageStreamListener((ImageInfo info, bool _) {
+        completer.complete(info.image);
+      }));
+      completer.future.then((value) {
+        designSize = Offset(value.width.toDouble(), value.height.toDouble());
+      });
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
+
+  void setBackgroundSize() {
+    try {
+      Image image = Image.network(backgroundUrl);
+      Completer<ui.Image> completer = Completer<ui.Image>();
+      image.image
+          .resolve(const ImageConfiguration())
+          .addListener(ImageStreamListener((ImageInfo info, bool _) {
+        completer.complete(info.image);
+      }));
+      completer.future.then((value) {
+        backgroundSize = Offset(value.width.toDouble(), value.height.toDouble());
+      });
     } catch (e) {
       print('Hata: $e');
     }
@@ -266,17 +288,19 @@ class MockupController with ChangeNotifier {
     );
   }
 
-  void fromMockupSettings(MockupSettingsModel settings) {
-    _backgroundUrl = settings.backgroundUrl;
-    _designPosition = settings.designPosition;
-    _designScale = settings.designScale;
-    _designRotationX = settings.designRotationX;
-    _designRotationY = settings.designRotationY;
-    _designRotationZ = settings.designRotationZ;
-    _backgroundScale = settings.backgroundScale;
-    _backgroundSize = settings.backgroundSize;
-    _backgroundGlobalPosition = settings.backgroundGlobalPosition;
-    _maxResolutionOfRender = settings.maxResolutionOfRender;
-    notifyListeners();
+  static MockupController fromMockupSettings(MockupSettingsModel settings) {
+    return MockupController(
+      screenshotController: ScreenshotController(),
+      backgroundUrl: settings.backgroundUrl,
+      designPosition: settings.designPosition,
+      designScale: settings.designScale,
+      designRotationX: settings.designRotationX,
+      designRotationY: settings.designRotationY,
+      designRotationZ: settings.designRotationZ,
+      backgroundScale: settings.backgroundScale,
+      backgroundSize: settings.backgroundSize,
+      backgroundGlobalPosition: settings.backgroundGlobalPosition,
+      maxResolutionOfRender: settings.maxResolutionOfRender,
+    );
   }
 }

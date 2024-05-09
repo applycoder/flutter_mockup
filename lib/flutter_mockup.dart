@@ -43,7 +43,7 @@ class _MockupWidgetState extends State<MockupWidget> {
             if (previousConstraints != constraints.biggest) {
               previousConstraints = constraints.biggest;
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                controller.constraintsUpdate(constraints.biggest);
+                controller.constraints = constraints.biggest;
               });
             }
             return _buildMockupWidget();
@@ -125,7 +125,7 @@ class _MockupWidgetState extends State<MockupWidget> {
                         -imageSize.dy * pointScale.dy,
                       );
 
-                  controller.resizeAndRotateDesign(newScale, newOffset, previousDesignRotation);
+                  controller.resizeAndRotateDesign(newScale, newOffset, controller.designRotationZ);
                 }
                 if (event is PointerScaleEvent) {
                   final newScale = controller.designScale * event.scale;
