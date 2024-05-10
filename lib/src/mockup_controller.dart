@@ -23,6 +23,8 @@ class MockupController with ChangeNotifier {
   int _maxResolutionOfRender = 500;
   Size _constraints = Size.zero;
   GlobalKey widgetKey = GlobalKey();
+  bool isBackgroundReadyToRender = false;
+  bool isDesignReadyToRender = false;
 
   MockupController({
     required this.screenshotController,
@@ -79,6 +81,8 @@ class MockupController with ChangeNotifier {
         designSize.dy * backgroundScale * designScale,
       );
 
+  bool get isReadyToRender => isBackgroundReadyToRender && isDesignReadyToRender;
+
   set backgroundUrl(String value) {
     _backgroundUrl = value;
     setBackgroundSize();
@@ -123,6 +127,7 @@ class MockupController with ChangeNotifier {
   set backgroundSize(Offset value) {
     _backgroundSize = value;
     if (constraints != Size.zero) constraintsUpdate();
+    isBackgroundReadyToRender = true;
     notifyListeners();
   }
 
@@ -134,6 +139,7 @@ class MockupController with ChangeNotifier {
   set designSize(Offset value) {
     _designSize = value;
     if (constraints != Size.zero) constraintsUpdate();
+    isDesignReadyToRender = true;
     notifyListeners();
   }
 
@@ -231,6 +237,7 @@ class MockupController with ChangeNotifier {
   }
 
   void setLogoSize() {
+    isDesignReadyToRender = false;
     try {
       Image image = Image.network(designUrl);
       Completer<ui.Image> completer = Completer<ui.Image>();
@@ -248,6 +255,7 @@ class MockupController with ChangeNotifier {
   }
 
   void setBackgroundSize() {
+    isBackgroundReadyToRender = false;
     try {
       Image image = Image.network(backgroundUrl);
       Completer<ui.Image> completer = Completer<ui.Image>();
