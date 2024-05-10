@@ -20,7 +20,7 @@ class MockupController with ChangeNotifier {
   Offset _backgroundSize = Offset.zero;
   Offset _designSize = Offset.zero;
   Offset _backgroundGlobalPosition = Offset.zero;
-  int _maxResolutionOfRender = 500;
+  int _maxResolutionOfRender;
   Size _constraints = Size.zero;
   GlobalKey widgetKey = GlobalKey();
   bool isBackgroundReadyToRender = false;
@@ -50,7 +50,7 @@ class MockupController with ChangeNotifier {
         _backgroundScale = backgroundScale ?? 1.0,
         _backgroundSize = backgroundSize ?? Offset.zero,
         _backgroundGlobalPosition = backgroundGlobalPosition ?? Offset.zero,
-        _maxResolutionOfRender = maxResolutionOfRender ?? 500 {
+        _maxResolutionOfRender = maxResolutionOfRender ?? 1000 {
     setBackgroundSize();
     setLogoSize();
   }
@@ -84,11 +84,13 @@ class MockupController with ChangeNotifier {
   bool get isReadyToRender => isBackgroundReadyToRender && isDesignReadyToRender;
 
   set backgroundUrl(String value) {
+    isBackgroundReadyToRender = false;
     _backgroundUrl = value;
     setBackgroundSize();
   }
 
   set designUrl(String value) {
+    isDesignReadyToRender = false;
     _designUrl = value;
     setLogoSize();
     notifyListeners();
@@ -203,36 +205,62 @@ class MockupController with ChangeNotifier {
   Future<Uint8List?> generateMockedUpImage() async {
     final maxPx = max(backgroundSize.dx, backgroundSize.dy);
     final scale = _maxResolutionOfRender / maxPx;
-    final image = await screenshotController.captureFromWidget(
-      LayoutBuilder(
-        builder: (context, constraints) {
-          return Stack(
-            children: [
-              Image.network(
-                backgroundUrl,
-              ),
-              Positioned(
-                left: designPosition.dx,
-                top: designPosition.dy,
-                child: Transform(
+
+    final backgroundImageProvider = NetworkImage(backgroundUrl);
+    final backgroundImageCompleter = Completer<ImageInfo>();
+    final designImageProvider = NetworkImage(designUrl);
+    final designImageCompleter = Completer<ImageInfo>();
+    final backgroundImageStream = backgroundImageProvider.resolve(const ImageConfiguration());
+    final designImageStream = designImageProvider.resolve(const ImageConfiguration());
+    final backgroundImageListener = ImageStreamListener((ImageInfo info, bool _) {
+      if (!backgroundImageCompleter.isCompleted) backgroundImageCompleter.complete(info);
+    });
+    final designImageListener = ImageStreamListener((ImageInfo info, bool _) {
+      if (!designImageCompleter.isCompleted) designImageCompleter.complete(info);
+    });
+
+    backgroundImageStream.addListener(backgroundImageListener);
+    designImageStream.addListener(designImageListener);
+    await backgroundImageCompleter.future;
+    await designImageCompleter.future;
+    backgroundImageStream.removeListener(backgroundImageListener);
+    designImageStream.removeListener(designImageListener);
+
+    final image = await screenshotController.captureFromWidget(LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            Image(
+              image: backgroundImageProvider,
+              width: (backgroundSize.dx * backgroundScale),
+              height: (backgroundSize.dy * backgroundScale),
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              isAntiAlias: true,
+            ),
+            Positioned(
+              left: designPosition.dx,
+              top: designPosition.dy,
+              child: Transform(
                   transform: Matrix4.identity()
                     ..setEntry(3, 2, 0.001)
                     ..rotateX(designRotationX)
                     ..rotateY(designRotationY)
                     ..rotateZ(designRotationZ),
-                  child: Image.network(
-                    designUrl,
-                    width: designSize.dx * backgroundScale * designScale,
-                    height: designSize.dy * backgroundScale * designScale,
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      pixelRatio: 1 / backgroundScale * scale,
-    );
+                  alignment: Alignment.center,
+                  child: Image(
+                    image: designImageProvider,
+                    width: designWidgetSize.dx * (550 / designSize.dx),
+                    height: designWidgetSize.dy * (550 / designSize.dy),
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    isAntiAlias: true,
+                  )),
+            ),
+          ],
+        );
+      },
+    ), pixelRatio: 1 / backgroundScale * scale, delay: Duration.zero);
     return image;
   }
 
