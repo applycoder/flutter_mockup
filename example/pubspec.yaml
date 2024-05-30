@@ -9,14 +9,14 @@ environment:
 dependencies:
   flutter_mockup:
     path: ../
-  screenshot: ^2.3.0
+  screenshot: ^3.0.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
