@@ -1,8 +1,8 @@
 name: flutter_mockup
 description: "A flutter package project for mockuping spescific flat surface
   like tshirt using custom images."
-version: 0.0.1
-homepage: null
+version: 1.0.0
+homepage: https://github.com/applycoder/flutter_mockup
 
 environment:
   sdk: ">=3.3.1 <4.0.0"

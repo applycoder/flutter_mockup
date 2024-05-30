@@ -1,4 +1,3 @@
-import 'dart:html' as html;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -23,13 +22,14 @@ class _MainAppState extends State<MainApp> {
     designUrl: 'assets/design2.png',
   );
 
-  void saveImage(Uint8List image) {
-    final blob = html.Blob([image]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute('download', 'mockup.png')
-      ..click();
-    html.Url.revokeObjectUrl(url);
+  getBytesOfMockup() async {
+    final image = await _controller.screenshotController.capture();
+    return image;
+  }
+
+  Future saveImage(Uint8List image) async {
+    final bytes = getBytesOfMockup();
+    //TODO: Your code to save image
   }
 
   @override
@@ -37,10 +37,25 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Center(
-          child: MockupWidget(
-            controller: _controller,
-          ),
+        body: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: MockupWidget(
+                  controller: _controller,
+                ),
+              ),
+            ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  final image = await _controller.screenshotController.capture();
+                  saveImage(image!);
+                },
+                child: const Text('Save Image'),
+              ),
+            )
+          ],
         ),
       ),
     );
