@@ -58,4 +58,66 @@ class MockupSettingsModel {
       maxResolutionOfRender: map['maxResolutionOfRender'],
     );
   }
+
+  MockupSettingsModel copyWith({
+    String? backgroundUrl,
+    Offset? designPosition,
+    double? designScale,
+    double? designRotationX,
+    double? designRotationY,
+    double? designRotationZ,
+    double? backgroundScale,
+    Offset? backgroundSize,
+    Offset? backgroundGlobalPosition,
+    int? maxResolutionOfRender,
+  }) {
+    return MockupSettingsModel(
+      backgroundUrl: backgroundUrl ?? this.backgroundUrl,
+      designPosition: designPosition ?? this.designPosition,
+      designScale: designScale ?? this.designScale,
+      designRotationX: designRotationX ?? this.designRotationX,
+      designRotationY: designRotationY ?? this.designRotationY,
+      designRotationZ: designRotationZ ?? this.designRotationZ,
+      backgroundScale: backgroundScale ?? this.backgroundScale,
+      backgroundSize: backgroundSize ?? this.backgroundSize,
+      backgroundGlobalPosition: backgroundGlobalPosition ?? this.backgroundGlobalPosition,
+      maxResolutionOfRender: maxResolutionOfRender ?? this.maxResolutionOfRender,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'MockupSettingsModel(backgroundUrl: $backgroundUrl, designPosition: $designPosition, designScale: $designScale, designRotationX: $designRotationX, designRotationY: $designRotationY, designRotationZ: $designRotationZ, backgroundScale: $backgroundScale, backgroundSize: $backgroundSize, backgroundGlobalPosition: $backgroundGlobalPosition, maxResolutionOfRender: $maxResolutionOfRender)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is MockupSettingsModel &&
+        other.backgroundUrl == backgroundUrl &&
+        other.designPosition == designPosition &&
+        other.designScale == designScale &&
+        other.designRotationX == designRotationX &&
+        other.designRotationY == designRotationY &&
+        other.designRotationZ == designRotationZ &&
+        other.backgroundScale == backgroundScale &&
+        other.backgroundSize == backgroundSize &&
+        other.backgroundGlobalPosition == backgroundGlobalPosition &&
+        other.maxResolutionOfRender == maxResolutionOfRender;
+  }
+
+  @override
+  int get hashCode {
+    return backgroundUrl.hashCode ^
+        designPosition.hashCode ^
+        designScale.hashCode ^
+        designRotationX.hashCode ^
+        designRotationY.hashCode ^
+        designRotationZ.hashCode ^
+        backgroundScale.hashCode ^
+        backgroundSize.hashCode ^
+        backgroundGlobalPosition.hashCode ^
+        maxResolutionOfRender.hashCode;
+  }
 }
